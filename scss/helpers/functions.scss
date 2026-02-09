@@ -1,0 +1,168 @@
+@function z($name) {
+  @if index($zIndexes, $name) {
+	@return ((length($zIndexes) + 999) - index($zIndexes, $name)) + 1;
+  } @else {
+	@error 'There is no item "#{$name}" in this list; choose one of: #{$zIndexes}';
+
+	@return null;
+  }
+}
+
+// @link https://css-tricks.com/snippets/sass/deep-getset-maps/
+@function map-deep-get($map, $keys...) {
+  @each $key in $keys {
+	$map: map-get($map, $key);
+  }
+  @return $map;
+}
+
+@function toRGB($color) {
+  @return red($color) + ", " + green($color) + ", " + blue($color);
+}
+
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+	@return $number / ($number * 0 + 1);
+  }
+
+  @return $number;
+}
+
+@function em($pixel, $context: $browserContext) {
+  @return ($pixel / $context) * 1em;
+}
+
+@function rem($pixel, $context: $browserContext) {
+  @return ($pixel / $context) * 1rem;
+}
+
+@function line-height($fontSizeInPixel, $lineHeightInPixel) {
+  @return $lineHeightInPixel / $fontSizeInPixel;
+}
+
+///////////////////////////////////////////////////////////
+// Plain SASS Trigonometry Algorithm in Taylor Expansion //
+//                                                       //
+// Based on                                              //
+//      http://japborst.net/posts/sass-sines-and-cosines //
+///////////////////////////////////////////////////////////
+
+$pi: 3.14159265359;
+$_precision: 10;
+
+@function pow($base, $exp) {
+  $value: $base;
+
+  @if $exp > 1 {
+	@for $i from 2 through $exp {
+	  $value: $value * $base;
+	}
+  }
+
+  @if $exp < 1 {
+	@for $i from 0 through -$exp {
+	  $value: $value / $base;
+	}
+  }
+
+  @return $value;
+}
+
+@function fact($num) {
+  $fact: 1;
+
+  @if $num > 0 {
+	@for $i from 1 through $num {
+	  $fact: $fact * $i;
+	}
+  }
+
+  @return $fact;
+}
+
+@function _to_unitless_rad($angle) {
+  @if unit($angle) == "deg" {
+	$angle: $angle / 180deg * $pi;
+  }
+
+  @if unit($angle) == "rad" {
+	$angle: $angle / 1rad;
+  }
+
+  @return $angle;
+}
+
+@function sin($angle) {
+  $a: _to_unitless_rad($angle);
+  $sin: $a;
+
+  @for $n from 1 through $_precision {
+	$sin: $sin + (pow(-1, $n) / fact(2 * $n + 1) ) * pow($a, (2 * $n + 1));
+  }
+
+  @return $sin;
+}
+
+@function cos($angle) {
+  $a: _to_unitless_rad($angle);
+  $cos: 1;
+
+  @for $n from 1 through $_precision {
+	$cos: $cos + ( pow(-1, $n) / fact(2*$n) ) * pow($a, 2*$n);
+  }
+
+  @return $cos;
+}
+
+@function tan($angle) {
+  @return sin($angle) / cos($angle);
+}
+
+////
+/// Helper function to easily use an SVG inline in CSS
+/// without encoding it to base64, saving bytes.
+/// It also helps with browser support.
+////
+
+/// A small function allowing skipping base64 encoding
+/// and simply pasting the SVG markup right in the CSS.
+/// @author Jakob Eriksen
+/// @link http://codepen.io/jakob-e/pen/doMoML
+/// @param {String} $svg - SVG image to encode
+/// @return {String} - Encoded SVG data uri
+@function svg-uri($svg) {
+  $encoded: '';
+  $slice: 2000;
+  $index: 0;
+  $loops: ceil(str-length($svg) / $slice);
+
+  @for $i from 1 through $loops {
+	$chunk: str-slice($svg, $index, $index + $slice - 1);
+	$chunk: str-replace($chunk, '"', "'");
+	$chunk: str-replace($chunk, '<', '%3C');
+	$chunk: str-replace($chunk, '>', '%3E');
+	$chunk: str-replace($chunk, '&', '%26');
+	$chunk: str-replace($chunk, '#', '%23');
+	$encoded: #{$encoded}#{$chunk};
+	$index: $index + $slice;
+  }
+
+  @return url("data:image/svg+xml;charset=utf8,#{$encoded}");
+}
+
+/// Replace `$search` with `$replace` in `$string`
+/// @author Hugo Giraudel
+/// @link http://sassmeister.com/gist/1b4f2da5527830088e4d
+/// @param {String} $string - Initial string
+/// @param {String} $search - Substring to replace
+/// @param {String} $replace ('') - New value
+/// @return {String} - Updated string
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+
+  @if $index {
+	@return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+
+  @return $string;
+}

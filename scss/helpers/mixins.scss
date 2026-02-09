@@ -1,0 +1,92 @@
+@mixin font-face($font-name, $file-name, $weight: normal, $style: normal) {
+  @font-face {
+	font-family: quote($font-name);
+	src: url($file-name + '.otf') format('opentype');
+	src: url($file-name + '.eot');
+	src: url($file-name + '.eot?#iefix') format('embedded-opentype'),
+	url($file-name + '.woff') format('woff'),
+	url($file-name + '.ttf') format('truetype'),
+	url($file-name + '.svg##{$font-name}') format('svg');
+	font-weight: $weight;
+	font-style: $style;
+  }
+}
+
+@mixin admin-sticky-fix( $offset: 0, $isImportant: false) {
+  $narrow-offset: 46px;
+  $wide-offset: 32px;
+  @if $offset != 0 and type-of($offset) == 'number' {
+	$narrow-offset: $narrow-offset + $offset;
+	$wide-offset: $wide-offset + $offset;
+  }
+  @if ($isImportant) {
+	.admin-bar & {
+	  top: calc(#{$narrow-offset} + #{$offset}) !important;
+	  @media screen and (min-width: 783px) {
+		top: calc(#{$wide-offset} + #{$offset}) !important;
+	  }
+	}
+  } @else {
+	.admin-bar & {
+	  top: calc(#{$narrow-offset} + #{$offset});
+	  @media screen and (min-width: 783px) {
+		top: calc(#{$wide-offset} + #{$offset});
+	  }
+	}
+  }
+}
+
+@mixin headings {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+	@content;
+  }
+}
+
+@mixin mq($width, $type: max) {
+  @if map_has_key($breakpoints, $width) {
+	$width: map_get($breakpoints, $width);
+  } @else {
+	$width: $width * 1px;
+  }
+
+  @if $type == max {
+	$width: $width - 1px;
+  }
+
+  @media only screen and (#{$type}-width: $width) {
+	@content;
+  }
+}
+
+@mixin defaultText($blockVariable, $fontSize: true, $inSection: true, $useDefaults: false) {
+  font-family: var(--#{$blockVariable}TextFontFamily, #{$textFontFamily});
+
+  @if $fontSize {
+	font-size: var(--#{$blockVariable}TextFontSize, #{$textFontSize});
+  }
+
+  @if $inSection {
+	color: var(--#{$blockVariable}TextColor, var(--sectionColor, #{$textColor}));
+  } @else {
+	color: var(--#{$blockVariable}TextColor, #{$textColor});
+  }
+
+  @if ($useDefaults) {
+	font-weight: var(--#{$blockVariable}TextFontWeight, #{$textFontWeight});
+	line-height: var(--#{$blockVariable}TextLineHeight, #{$textLineHeight});
+	letter-spacing: var(--#{$blockVariable}TextLetterSpacing, #{$textLetterSpacing});
+	text-align: var(--#{$blockVariable}TextAlign, #{$textAlign});
+	text-transform: var(--#{$blockVariable}TextTransform, #{$textTransform});
+  } @else {
+	font-weight: var(--#{$blockVariable}TextFontWeight, 400);
+	line-height: var(--#{$blockVariable}TextLineHeight, 1.2);
+	letter-spacing: var(--#{$blockVariable}TextLetterSpacing, 0px);
+	text-align: var(--#{$blockVariable}TextAlign, inherit);
+	text-transform: var(--#{$blockVariable}TextTransform, initial);
+  }
+}

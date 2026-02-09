@@ -1,0 +1,21 @@
+{
+  "name": "@opentech0/style-framework",
+  "version": "1.0.8",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opentech0/style-framework.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/opentech0/style-framework/issues"
+  },
+  "homepage": "https://github.com/opentech0/style-framework#readme",
+  "dependencies": {
+    "postcss-value-parser": "^4.1.0"
+  },
+  "description": ""
+}
