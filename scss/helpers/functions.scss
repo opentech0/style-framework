@@ -1,6 +1,13 @@
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
+
 @function z($name) {
-  @if index($zIndexes, $name) {
-	@return ((length($zIndexes) + 999) - index($zIndexes, $name)) + 1;
+  @if list.index($zIndexes, $name) {
+	@return ((list.length($zIndexes) + 999) - list.index($zIndexes, $name)) + 1;
   } @else {
 	@error 'There is no item "#{$name}" in this list; choose one of: #{$zIndexes}';
 
@@ -11,33 +18,35 @@
 // @link https://css-tricks.com/snippets/sass/deep-getset-maps/
 @function map-deep-get($map, $keys...) {
   @each $key in $keys {
-	$map: map-get($map, $key);
+	$map: map.get($map, $key);
   }
   @return $map;
 }
 
 @function toRGB($color) {
-  @return red($color) + ", " + green($color) + ", " + blue($color);
+  @return color.channel($color, 'red', $space: rgb) + ", " +
+	color.channel($color, 'green', $space: rgb) + ", " +
+	color.channel($color, 'blue', $space: rgb);
 }
 
 @function strip-unit($number) {
-  @if type-of($number) == 'number' and not unitless($number) {
-	@return $number / ($number * 0 + 1);
+  @if meta.type-of($number) == 'number' and not math.is-unitless($number) {
+	@return math.div($number, $number * 0 + 1);
   }
 
   @return $number;
 }
 
 @function em($pixel, $context: $browserContext) {
-  @return ($pixel / $context) * 1em;
+  @return math.div($pixel, $context) * 1em;
 }
 
 @function rem($pixel, $context: $browserContext) {
-  @return ($pixel / $context) * 1rem;
+  @return math.div($pixel, $context) * 1rem;
 }
 
 @function line-height($fontSizeInPixel, $lineHeightInPixel) {
-  @return $lineHeightInPixel / $fontSizeInPixel;
+  @return math.div($lineHeightInPixel, $fontSizeInPixel);
 }
 
 ///////////////////////////////////////////////////////////
@@ -61,7 +70,7 @@ $_precision: 10;
 
   @if $exp < 1 {
 	@for $i from 0 through -$exp {
-	  $value: $value / $base;
+	  $value: math.div($value, $base);
 	}
   }
 
@@ -81,12 +90,12 @@ $_precision: 10;
 }
 
 @function _to_unitless_rad($angle) {
-  @if unit($angle) == "deg" {
-	$angle: $angle / 180deg * $pi;
+  @if math.unit($angle) == "deg" {
+	$angle: math.div($angle, 180deg) * $pi;
   }
 
-  @if unit($angle) == "rad" {
-	$angle: $angle / 1rad;
+  @if math.unit($angle) == "rad" {
+	$angle: math.div($angle, 1rad);
   }
 
   @return $angle;
@@ -97,7 +106,7 @@ $_precision: 10;
   $sin: $a;
 
   @for $n from 1 through $_precision {
-	$sin: $sin + (pow(-1, $n) / fact(2 * $n + 1) ) * pow($a, (2 * $n + 1));
+	$sin: $sin + math.div(pow(-1, $n), fact(2 * $n + 1)) * pow($a, (2 * $n + 1));
   }
 
   @return $sin;
@@ -108,14 +117,14 @@ $_precision: 10;
   $cos: 1;
 
   @for $n from 1 through $_precision {
-	$cos: $cos + ( pow(-1, $n) / fact(2*$n) ) * pow($a, 2*$n);
+	$cos: $cos + math.div(pow(-1, $n), fact(2*$n)) * pow($a, 2*$n);
   }
 
   @return $cos;
 }
 
 @function tan($angle) {
-  @return sin($angle) / cos($angle);
+  @return math.div(sin($angle), cos($angle));
 }
 
 ////
@@ -134,10 +143,10 @@ $_precision: 10;
   $encoded: '';
   $slice: 2000;
   $index: 0;
-  $loops: ceil(str-length($svg) / $slice);
+  $loops: math.ceil(math.div(string.length($svg), $slice));
 
   @for $i from 1 through $loops {
-	$chunk: str-slice($svg, $index, $index + $slice - 1);
+	$chunk: string.slice($svg, $index, $index + $slice - 1);
 	$chunk: str-replace($chunk, '"', "'");
 	$chunk: str-replace($chunk, '<', '%3C');
 	$chunk: str-replace($chunk, '>', '%3E');
@@ -158,10 +167,11 @@ $_precision: 10;
 /// @param {String} $replace ('') - New value
 /// @return {String} - Updated string
 @function str-replace($string, $search, $replace: '') {
-  $index: str-index($string, $search);
+  $index: string.index($string, $search);
 
   @if $index {
-	@return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+	@return string.slice($string, 1, $index - 1) + $replace +
+		str-replace(string.slice($string, $index + string.length($search)), $search, $replace);
   }
 
   @return $string;
