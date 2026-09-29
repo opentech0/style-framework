@@ -1,6 +1,10 @@
+@use 'sass:map';
+@use 'sass:meta';
+@use 'sass:string';
+
 @mixin font-face($font-name, $file-name, $weight: normal, $style: normal) {
   @font-face {
-	font-family: quote($font-name);
+	font-family: string.quote($font-name);
 	src: url($file-name + '.otf') format('opentype');
 	src: url($file-name + '.eot');
 	src: url($file-name + '.eot?#iefix') format('embedded-opentype'),
@@ -15,7 +19,7 @@
 @mixin admin-sticky-fix( $offset: 0, $isImportant: false) {
   $narrow-offset: 46px;
   $wide-offset: 32px;
-  @if $offset != 0 and type-of($offset) == 'number' {
+  @if $offset != 0 and meta.type-of($offset) == 'number' {
 	$narrow-offset: $narrow-offset + $offset;
 	$wide-offset: $wide-offset + $offset;
   }
@@ -48,8 +52,8 @@
 }
 
 @mixin mq($width, $type: max) {
-  @if map_has_key($breakpoints, $width) {
-	$width: map_get($breakpoints, $width);
+  @if map.has-key($breakpoints, $width) {
+	$width: map.get($breakpoints, $width);
   } @else {
 	$width: $width * 1px;
   }
